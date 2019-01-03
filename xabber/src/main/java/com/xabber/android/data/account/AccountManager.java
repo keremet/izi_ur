@@ -195,7 +195,6 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
                     serverName,
                     userName,
                     resource,
-                    accountRealm.isStorePassword(),
                     accountRealm.getPassword(),
                     accountRealm.getToken(),
                     accountRealm.getColorIndex(),
@@ -342,7 +341,7 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
      * Creates new account and starts connection.
      */
     private AccountItem addAccount(boolean custom, String host, int port,
-                                   DomainBareJid serverName, Localpart userName, boolean storePassword,
+                                   DomainBareJid serverName, Localpart userName,
                                    String password, String token, Resourcepart resource, int color, int order, boolean syncNotAllowed, int timestamp, int priority,
                                    StatusMode statusMode, String statusText, boolean enabled,
                                    boolean saslEnabled, TLSMode tlsMode, boolean compression,
@@ -352,7 +351,7 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
                                    boolean registerNewAccount) {
 
         AccountItem accountItem = new AccountItem(custom, host, port, serverName, userName,
-                resource, storePassword, password, token, color, order, syncNotAllowed, timestamp, priority, statusMode, statusText, enabled,
+                resource, password, token, color, order, syncNotAllowed, timestamp, priority, statusMode, statusText, enabled,
                 saslEnabled, tlsMode, compression, proxyType, proxyHost, proxyPort, proxyUser,
                 proxyPassword, syncable, keyPair, lastSync, archiveMode, true);
 
@@ -370,7 +369,7 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
      * @throws NetworkException if user or server part are invalid.
      */
     public AccountJid addAccount(String user, String password, String token, boolean syncable,
-                                 boolean storePassword, boolean xabberSync, boolean useOrbot,
+                                 boolean xabberSync, boolean useOrbot,
                                  boolean registerNewAccount, boolean enabled, boolean tlsRequired)
             throws NetworkException {
         if (user == null) {
@@ -418,7 +417,7 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
         ArchiveMode archiveMode = ArchiveMode.valueOf(application.getString(R.string.account_archive_mode_default_value));
 
         accountItem = addAccount(useCustomHost, host, port, serverName, userName,
-                storePassword, password, token, resource, getNextColorIndex(), getNextOrder(), false,
+                password, token, resource, getNextColorIndex(), getNextOrder(), false,
                 0, 0, StatusMode.available,
                 SettingsManager.statusText(), enabled, true, tlsRequired ? TLSMode.required : TLSMode.enabled,
                 useCompression, useOrbot ? ProxyType.orbot : ProxyType.none, "localhost", 8080,
@@ -534,7 +533,6 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
                 connectionSettings.getPort(),
                 connectionSettings.getServerName(),
                 connectionSettings.getUserName(),
-                accountItem.isStorePassword(),
                 connectionSettings.getPassword(),
                 connectionSettings.getToken(),
                 generateResource(),
@@ -563,7 +561,7 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
      * @param account       full source jid
      */
     public void updateAccount(AccountJid account, boolean custom, String host, int port, DomainBareJid serverName,
-                              Localpart userName, boolean storePassword, String password, String token, Resourcepart resource,
+                              Localpart userName, String password, String token, Resourcepart resource,
                               int priority, boolean enabled, boolean saslEnabled, TLSMode tlsMode,
                               boolean compression, ProxyType proxyType, String proxyHost, int proxyPort,
                               String proxyUser, String proxyPassword, boolean syncable,
@@ -606,7 +604,6 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
                     listener.onAccountSyncableChanged(result);
                 }
             }
-            result.setStorePassword(storePassword);
             boolean changed = result.isEnabled() != enabled;
             result.setEnabled(enabled);
             if (result.getPriority() != priority) {
@@ -643,7 +640,7 @@ public class AccountManager implements OnLoadListener, OnUnloadListener, OnWipeL
             KeyPair keyPair = accountItem.getKeyPair();
             Date lastSync = accountItem.getLastSync();
             removeAccountWithoutCallback(account);
-            result = addAccount(custom, host, port, serverName, userName, storePassword,
+            result = addAccount(custom, host, port, serverName, userName,
                     password, token, resource, colorIndex, accountItem.getOrder(), accountItem.isSyncNotAllowed(),
                     accountItem.getTimestamp(), priority, statusMode, statusText, enabled,
                     saslEnabled, tlsMode, compression, proxyType, proxyHost, proxyPort, proxyUser,

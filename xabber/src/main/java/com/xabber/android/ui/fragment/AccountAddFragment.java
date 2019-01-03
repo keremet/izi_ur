@@ -26,7 +26,6 @@ import com.xabber.android.ui.helper.OrbotHelper;
 
 public class AccountAddFragment extends Fragment implements View.OnClickListener {
 
-    private CheckBox storePasswordView;
     private CheckBox chkSync;
     private CheckBox chkRequireTLS;
     private CheckBox chkUseTOR;
@@ -44,7 +43,6 @@ public class AccountAddFragment extends Fragment implements View.OnClickListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account_add, container, false);
 
-        storePasswordView = (CheckBox) view.findViewById(R.id.store_password);
         chkSync = (CheckBox) view.findViewById(R.id.chkSync);
         if (XabberAccountManager.getInstance().getAccount() == null) {
             chkSync.setVisibility(View.GONE);
@@ -101,7 +99,6 @@ public class AccountAddFragment extends Fragment implements View.OnClickListener
                     passwordView.getText().toString(),
                     "",
                     false,
-                    storePasswordView.isChecked(),
                     chkSync.isChecked(),
                     chkUseTOR.isChecked(),
                     createAccountCheckBox.isChecked(), true,

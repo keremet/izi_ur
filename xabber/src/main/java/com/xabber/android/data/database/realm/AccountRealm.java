@@ -51,7 +51,6 @@ public class AccountRealm extends RealmObject {
     private boolean custom;
     private String host;
     private int port;
-    private boolean storePassword;
     private String password;
     private String token;
 
@@ -151,14 +150,6 @@ public class AccountRealm extends RealmObject {
 
     public void setResource(String resource) {
         this.resource = resource;
-    }
-
-    public boolean isStorePassword() {
-        return storePassword;
-    }
-
-    public void setStorePassword(boolean storePassword) {
-        this.storePassword = storePassword;
     }
 
     public String getPassword() {

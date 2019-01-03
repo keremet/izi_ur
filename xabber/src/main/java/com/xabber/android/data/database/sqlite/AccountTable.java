@@ -55,11 +55,11 @@ public class AccountTable extends AbstractTable {
     private static final String NAME = "accounts";
     private static final String[] PROJECTION = new String[]{Fields._ID,
             Fields.PROTOCOL, Fields.CUSTOM, Fields.HOST, Fields.PORT,
-            Fields.SERVER_NAME, Fields.USER_NAME, Fields.PASSWORD,
+            Fields.SERVER_NAME, Fields.USER_NAME,
             Fields.RESOURCE, Fields.COLOR_INDEX, Fields.PRIORITY,
             Fields.STATUS_MODE, Fields.STATUS_TEXT, Fields.ENABLED,
             Fields.SASL_ENABLED, Fields.TLS_MODE, Fields.COMPRESSION,
-            Fields.SYNCABLE, Fields.STORE_PASSWORD, Fields.PUBLIC_KEY,
+            Fields.SYNCABLE, Fields.PUBLIC_KEY,
             Fields.PRIVATE_KEY, Fields.LAST_SYNC, Fields.ARCHIVE_MODE,
             Fields.PROXY_TYPE, Fields.PROXY_HOST, Fields.PROXY_PORT,
             Fields.PROXY_USER, Fields.PROXY_PASSWORD};
@@ -104,13 +104,6 @@ public class AccountTable extends AbstractTable {
         return cursor.getString(cursor.getColumnIndex(Fields.USER_NAME));
     }
 
-    private static String getPassword(Cursor cursor) {
-        if (!isStorePassword(cursor)) {
-            return AccountItem.UNDEFINED_PASSWORD;
-        }
-        return cursor.getString(cursor.getColumnIndex(Fields.PASSWORD));
-    }
-
     private static String getResource(Cursor cursor) {
         return cursor.getString(cursor.getColumnIndex(Fields.RESOURCE));
     }
@@ -151,10 +144,6 @@ public class AccountTable extends AbstractTable {
 
     private static boolean isSyncable(Cursor cursor) {
         return cursor.getInt(cursor.getColumnIndex(Fields.SYNCABLE)) != 0;
-    }
-
-    private static boolean isStorePassword(Cursor cursor) {
-        return cursor.getInt(cursor.getColumnIndex(Fields.STORE_PASSWORD)) != 0;
     }
 
     private static Date getLastSync(Cursor cursor) {
@@ -218,14 +207,14 @@ public class AccountTable extends AbstractTable {
                 + " INTEGER PRIMARY KEY," + Fields.PROTOCOL + " TEXT,"
                 + Fields.CUSTOM + " INTEGER," + Fields.HOST + " TEXT,"
                 + Fields.PORT + " INTEGER," + Fields.SERVER_NAME + " TEXT,"
-                + Fields.USER_NAME + " TEXT," + Fields.PASSWORD + " TEXT,"
+                + Fields.USER_NAME + " TEXT,"
                 + Fields.RESOURCE + " TEXT," + Fields.COLOR_INDEX + " INTEGER,"
                 + Fields.PRIORITY + " INTEGER," + Fields.STATUS_MODE
                 + " INTEGER," + Fields.STATUS_TEXT + " TEXT," + Fields.ENABLED
                 + " INTEGER," + Fields.SASL_ENABLED + " INTEGER,"
                 + Fields.TLS_MODE + " INTEGER," + Fields.COMPRESSION
                 + " INTEGER," + Fields.SYNCABLE + " INTEGER,"
-                + Fields.STORE_PASSWORD + " INTEGER," + Fields.PUBLIC_KEY
+                + Fields.PUBLIC_KEY
                 + " BLOB," + Fields.PRIVATE_KEY + " BLOB," + Fields.LAST_SYNC
                 + " INTEGER," + Fields.ARCHIVE_MODE + " INTEGER,"
                 + Fields.PROXY_TYPE + " INTEGER," + Fields.PROXY_HOST
@@ -341,12 +330,6 @@ public class AccountTable extends AbstractTable {
                 sql = "UPDATE accounts SET syncable = 0;";
                 DatabaseManager.execSQL(db, sql);
                 break;
-            case 50:
-                sql = "ALTER TABLE accounts ADD COLUMN store_password INTEGER;";
-                DatabaseManager.execSQL(db, sql);
-                sql = "UPDATE accounts SET store_password = 1;";
-                DatabaseManager.execSQL(db, sql);
-                break;
             case 53:
                 sql = "UPDATE accounts SET protocol = 'gtalk' WHERE host = 'talk.google.com';";
                 DatabaseManager.execSQL(db, sql);
@@ -415,8 +398,7 @@ public class AccountTable extends AbstractTable {
         accountRealm.setServerName(AccountTable.getServerName(cursor));
         accountRealm.setUserName(AccountTable.getUserName(cursor));
         accountRealm.setResource(AccountTable.getResource(cursor));
-        accountRealm.setStorePassword(AccountTable.isStorePassword(cursor));
-        accountRealm.setPassword(AccountTable.getPassword(cursor));
+        accountRealm.setPassword(AccountItem.UNDEFINED_PASSWORD);
         accountRealm.setColorIndex(AccountTable.getColorIndex(cursor));
         accountRealm.setPriority(AccountTable.getPriority(cursor));
         accountRealm.setStatusMode(AccountTable.getStatusMode(cursor));
@@ -449,11 +431,7 @@ public class AccountTable extends AbstractTable {
         accountRealm.setServerName(connectionSettings.getServerName().getDomain().toString());
         accountRealm.setUserName(connectionSettings.getUserName().toString());
 
-        String password = connectionSettings.getPassword();
-        if (!accountItem.isStorePassword()) {
-            password = AccountItem.UNDEFINED_PASSWORD;
-        }
-        accountRealm.setPassword(password);
+        accountRealm.setPassword(AccountItem.UNDEFINED_PASSWORD);
 
         accountRealm.setToken(connectionSettings.getToken());
         accountRealm.setOrder(accountItem.getOrder());
@@ -475,7 +453,6 @@ public class AccountTable extends AbstractTable {
         accountRealm.setProxyUser(connectionSettings.getProxyUser());
         accountRealm.setProxyPassword(connectionSettings.getProxyPassword());
         accountRealm.setSyncable(accountItem.isSyncable());
-        accountRealm.setStorePassword(accountItem.isStorePassword());
         accountRealm.setKeyPair(accountItem.getKeyPair());
         accountRealm.setLastSync(accountItem.getLastSync());
         accountRealm.setArchiveMode(accountItem.getArchiveMode());
@@ -548,7 +525,6 @@ public class AccountTable extends AbstractTable {
         static final String ENABLED = "enabled";
         static final String SERVER_NAME = "server_name";
         static final String USER_NAME = "user_name";
-        static final String PASSWORD = "password";
         static final String RESOURCE = "resource";
         static final String PRIORITY = "priority";
         static final String STATUS_MODE = "status_mode";
@@ -562,7 +538,6 @@ public class AccountTable extends AbstractTable {
         static final String COLOR_INDEX = "color_index";
         static final String PROTOCOL = "protocol";
         static final String SYNCABLE = "syncable";
-        static final String STORE_PASSWORD = "store_password";
         static final String PUBLIC_KEY = "public_key";
         static final String PRIVATE_KEY = "private_key";
         static final String LAST_SYNC = "last_sync";

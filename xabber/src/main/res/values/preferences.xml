@@ -381,7 +381,6 @@
     <string name="account_enabled_key">account_enabled</string>
     <string name="account_syncable_key">account_syncable</string>
     <string name="account_username_key">account_username</string>
-    <string name="account_store_password_key">account_store_password</string>
     <string name="account_password_key">account_password</string>
     <bool name="account_use_custom_host_default">false</bool>
     <string name="account_host_key">account_host</string>

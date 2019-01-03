@@ -123,7 +123,6 @@ public class AccountEditorFragment extends BaseSettingsFragment {
 
         putValue(source, R.string.account_priority_key, accountItem.getPriority());
         putValue(source, R.string.account_enabled_key, accountItem.isEnabled());
-        putValue(source, R.string.account_store_password_key, accountItem.isStorePassword());
         putValue(source, R.string.account_syncable_key, accountItem.isSyncable());
         putValue(source, R.string.account_archive_mode_key, accountItem.getArchiveMode().ordinal());
         putValue(source, R.string.account_color_key, accountItem.getColorIndex());
@@ -184,7 +183,6 @@ public class AccountEditorFragment extends BaseSettingsFragment {
                 getInt(result, R.string.account_port_key),
                 serverName,
                 userName,
-                getBoolean(result, R.string.account_store_password_key),
                 getString(result, R.string.account_password_key),
                 "",
                 resource,

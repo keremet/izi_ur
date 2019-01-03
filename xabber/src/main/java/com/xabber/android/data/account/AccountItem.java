@@ -67,11 +67,6 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
      */
     private boolean syncable;
 
-    /**
-     * Whether password must be stored in database.
-     */
-    private boolean storePassword;
-
     private int priority;
 
     private StatusMode statusMode;
@@ -115,7 +110,7 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
 
     public AccountItem(boolean custom, String host,
                        int port, DomainBareJid serverName, Localpart userName, Resourcepart resource,
-                       boolean storePassword, String password, String token, int colorIndex, int order,
+                       String password, String token, int colorIndex, int order,
                        boolean syncNotAllowed, int timestamp,
                        int priority, StatusMode statusMode, String statusText,
                        boolean enabled, boolean saslEnabled, TLSMode tlsMode,
@@ -124,7 +119,7 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
                        boolean syncable, KeyPair keyPair, Date lastSync,
                        ArchiveMode archiveMode, boolean xabberAutoLoginEnabled) {
         super(custom, host, port, serverName, userName, resource,
-                storePassword, password, token, saslEnabled, tlsMode, compression,
+                password, token, saslEnabled, tlsMode, compression,
                 proxyType, proxyHost, proxyPort, proxyUser, proxyPassword);
         this.id = UUID.randomUUID().toString();
         this.colorIndex = colorIndex;
@@ -138,7 +133,6 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
         this.statusMode = statusMode;
         this.statusText = statusText;
         this.syncable = syncable;
-        this.storePassword = storePassword;
         this.keyPair = keyPair;
         this.lastSync = lastSync;
         this.archiveMode = archiveMode;
@@ -220,20 +214,6 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
      */
     void setSyncable(boolean syncable) {
         this.syncable = syncable;
-    }
-
-    /**
-     * @return Whether password must be stored in database.
-     */
-    public boolean isStorePassword() {
-        return storePassword;
-    }
-
-    /**
-     * Sets whether password must be stored in database.
-     */
-    void setStorePassword(boolean storePassword) {
-        this.storePassword = storePassword;
     }
 
     public KeyPair getKeyPair() {
@@ -396,13 +376,9 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
     }
 
     /**
-     * Remove password and update notification if {@link #storePassword} is
-     * disabled.
+     * Remove password and update notification
      */
     void clearPassword() {
-        if (storePassword) {
-            return;
-        }
         AccountManager.getInstance().removePasswordRequest(getAccount());
         getConnectionSettings().setPassword(UNDEFINED_PASSWORD);
     }

@@ -78,7 +78,7 @@ public abstract class ConnectionItem {
 
     public ConnectionItem(boolean custom,
                           String host, int port, DomainBareJid serverName, Localpart userName,
-                          Resourcepart resource, boolean storePassword, String password, String token,
+                          Resourcepart resource, String password, String token,
                           boolean saslEnabled, TLSMode tlsMode, boolean compression,
                           ProxyType proxyType, String proxyHost, int proxyPort,
                           String proxyUser, String proxyPassword) {

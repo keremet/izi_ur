@@ -58,13 +58,6 @@
                 android:singleLine="true"
                 android:text="" />
 
-            <CheckBox
-                android:id="@+id/store_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/account_store_password" />
-
         </LinearLayout>
 
         <CheckBox

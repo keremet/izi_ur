@@ -501,7 +501,7 @@ public class XabberAccountManager implements OnLoadListener {
             if (accountJid == null && !account.isDeleted()) {
                 try {
                     AccountJid jid = AccountManager.getInstance().addAccount(account.getJid(),
-                            "", account.getToken(), false, true,
+                            "", account.getToken(), false,
                             true, false, false, true, false);
                     AccountManager.getInstance().setColor(jid, ColorManager.getInstance().convertColorNameToIndex(account.getColor()));
                     AccountManager.getInstance().setOrder(jid, account.getOrder());
