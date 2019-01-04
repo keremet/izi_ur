@@ -160,11 +160,6 @@
 
     <string name="sync_not_allowed_summary">Accounts with non-standard settings (custom host, legacy SSL, proxy) can not be synchronized.</string>
 
-    <string name="patreon_title" translatable="false">Support Xabber on Patreon!</string>
-    <string name="patreon_pledged" translatable="false">$%1$d of $%2$d pledged per month.</string>
-    <string name="patreon_current_goal" translatable="false">Goal: %1$s</string>
-    <string name="patreon_appeal_url" translatable="false">https://www.xabber.com/appeal/</string>
-
     <string name="xmpp_confirm_title">Enter verification code that was sent to %1$s</string>
     <string name="xaccount_not_exist">Will create new account</string>
     <string name="xaccount_exist">Xabber Account exists</string>

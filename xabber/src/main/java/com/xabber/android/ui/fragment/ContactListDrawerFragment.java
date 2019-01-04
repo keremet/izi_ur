@@ -2,7 +2,6 @@ package com.xabber.android.ui.fragment;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.os.Build;
@@ -17,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -27,8 +25,6 @@ import com.xabber.android.data.account.AccountItem;
 import com.xabber.android.data.account.AccountManager;
 import com.xabber.android.data.account.listeners.OnAccountChangedListener;
 import com.xabber.android.data.entity.AccountJid;
-import com.xabber.android.data.http.PatreonManager;
-import com.xabber.android.data.http.XabberComClient;
 import com.xabber.android.data.log.LogManager;
 import com.xabber.android.data.xaccount.XabberAccount;
 import com.xabber.android.data.xaccount.XabberAccountManager;
@@ -40,7 +36,6 @@ import com.xabber.android.ui.adapter.AccountListPreferenceAdapter;
 import com.xabber.android.ui.color.AccountPainter;
 import com.xabber.android.ui.color.ColorManager;
 import com.xabber.android.ui.dialog.AccountDeleteDialog;
-import com.xabber.android.ui.widget.TextViewFadeAnimator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,11 +57,6 @@ public class ContactListDrawerFragment extends Fragment implements View.OnClickL
     private TextView tvAccountName;
     private TextView tvAccountEmail;
     private ImageView ivSync;
-
-    private TextView tvPatreonTitle;
-    private ProgressBar pbPatreon;
-    private TextViewFadeAnimator animator;
-    private String[] patreonTexts;
 
     private AccountListPreferenceAdapter accountListAdapter;
     private ImageView ivReorder;
@@ -124,10 +114,6 @@ public class ContactListDrawerFragment extends Fragment implements View.OnClickL
         tvAccountName = (TextView) view.findViewById(R.id.tvAccountName);
         tvAccountEmail = (TextView) view.findViewById(R.id.tvAccountEmail);
 
-        tvPatreonTitle = (TextView) view.findViewById(R.id.tvPatreonTitle);
-        pbPatreon = (ProgressBar) view.findViewById(R.id.pbPatreon);
-        view.findViewById(R.id.drawer_action_patreon).setOnClickListener(this);
-
         view.findViewById(R.id.drawer_action_settings).setOnClickListener(this);
         view.findViewById(R.id.drawer_action_about).setOnClickListener(this);
         view.findViewById(R.id.drawer_action_exit).setOnClickListener(this);
@@ -162,7 +148,6 @@ public class ContactListDrawerFragment extends Fragment implements View.OnClickL
     public void onPause() {
         super.onPause();
         Application.getInstance().removeUIListener(OnAccountChangedListener.class, this);
-        stopPatreonAnim();
         compositeSubscription.clear();
     }
 
@@ -199,7 +184,6 @@ public class ContactListDrawerFragment extends Fragment implements View.OnClickL
                 .fitCenter()
                 .into(drawerHeaderImage);
 
-        setupPatreonView();
         setupAccountList();
     }
 
@@ -225,47 +209,6 @@ public class ContactListDrawerFragment extends Fragment implements View.OnClickL
             tvAccountEmail.setText(R.string.not_login);
             ivSync.setImageResource(R.drawable.ic_sync_disable);
         }
-    }
-
-    private void setupPatreonView() {
-        XabberComClient.Patreon patreon = PatreonManager.getInstance().getPatreon();
-        if (patreon != null) {
-            XabberComClient.PatreonGoal currentGoal = null;
-            for (XabberComClient.PatreonGoal goal: patreon.getGoals()) {
-                if (goal.getGoal() > patreon.getPledged()) {
-                    currentGoal = goal;
-                    break;
-                }
-            }
-
-            if (currentGoal != null) {
-                patreonTexts = new String[3];
-                patreonTexts[0] = patreon.getString();
-                patreonTexts[1] = getString(R.string.patreon_pledged, patreon.getPledged(), currentGoal.getGoal());
-                patreonTexts[2] = getString(R.string.patreon_current_goal, currentGoal.getTitle());
-
-                tvPatreonTitle.setSelected(true);
-                pbPatreon.setMax(currentGoal.getGoal());
-                pbPatreon.setProgress(patreon.getPledged());
-
-                animator = new TextViewFadeAnimator(tvPatreonTitle, patreonTexts);
-                startPatreonAnim();
-            }
-        }
-    }
-
-    public void startPatreonAnim() {
-        if (patreonTexts != null && patreonTexts.length > 0) {
-            animator = new TextViewFadeAnimator(tvPatreonTitle, patreonTexts);
-            animator.startAnimation();
-        }
-    }
-
-    public void stopPatreonAnim() {
-        if (animator != null)
-            animator.stopAnimation();
-        if (patreonTexts != null && patreonTexts.length > 0)
-            tvPatreonTitle.setText(patreonTexts[0]);
     }
 
     private void setupAccountList() {

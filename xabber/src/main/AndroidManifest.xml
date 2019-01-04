@@ -532,12 +532,6 @@
             android:theme="@style/ThemeDark"/>
 
         <activity android:name=".ui.activity.XAChangePassActivity" />
-        <activity android:name=".ui.activity.PatreonAppealActivity"
-            android:theme="@style/ThemeDark">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.xabber.android.ui.activity.ContactListActivity" />
-        </activity>
 
         <activity android:name=".ui.activity.DeepLinkActivity" >
             <intent-filter>
