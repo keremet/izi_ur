@@ -22,8 +22,6 @@ import com.google.android.gms.safetynet.SafetyNetApi;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.xabber.android.R;
-import com.xabber.android.data.xaccount.AuthManager;
-import com.xabber.android.data.xaccount.HttpApiManager;
 import com.xabber.android.data.xaccount.XAccountTokenDTO;
 import com.xabber.android.data.xaccount.XabberAccount;
 import com.xabber.android.data.xaccount.XabberAccountManager;
@@ -31,11 +29,9 @@ import com.xabber.android.presentation.mvp.signup.SignUpRepo;
 import com.xabber.android.ui.color.BarPainter;
 import com.xabber.android.ui.fragment.XAccountEmailLoginFragment;
 import com.xabber.android.ui.fragment.XAccountLoginFragment;
-import com.xabber.android.ui.fragment.XAccountSignUpFragment1;
 import com.xabber.android.ui.fragment.XAccountSignUpFragment2;
 import com.xabber.android.ui.fragment.XAccountSignUpFragment3;
 import com.xabber.android.ui.fragment.XAccountSignUpFragment4;
-import com.xabber.android.utils.RetrofitErrorConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +47,7 @@ import rx.schedulers.Schedulers;
  * Created by valery.miller on 14.07.17.
  */
 
-public class XabberLoginActivity extends BaseLoginActivity implements XAccountSignUpFragment1.Listener,
+public class XabberLoginActivity extends BaseLoginActivity implements
         XAccountSignUpFragment2.Listener, XAccountSignUpFragment3.Listener,
         XAccountSignUpFragment4.Listener, XAccountLoginFragment.EmailClickListener,
         XAccountEmailLoginFragment.Listener, XAccountLoginFragment.ForgotPassClickListener {
@@ -80,8 +76,6 @@ public class XabberLoginActivity extends BaseLoginActivity implements XAccountSi
     private ProgressDialog progressDialog;
     private BarPainter barPainter;
     private Toolbar toolbar;
-
-    private List<AuthManager.Host> hosts = new ArrayList<>();
 
     public static Intent createIntent(Context context, @Nullable String currentFragment) {
         Intent intent = new Intent(context, XabberLoginActivity.class);
@@ -153,15 +147,7 @@ public class XabberLoginActivity extends BaseLoginActivity implements XAccountSi
     }
 
     public void showSignUpStep1Fragment() {
-        if (fragmentSignUpStep1 == null)
-            fragmentSignUpStep1 = XAccountSignUpFragment1.newInstance(this);
 
-        fTrans = getFragmentManager().beginTransaction();
-        fTrans.replace(R.id.container, fragmentSignUpStep1, FRAGMENT_SIGNUP_STEP1);
-        fTrans.commit();
-        currentFragment = FRAGMENT_SIGNUP_STEP1;
-
-        setupToolbar(false);
     }
 
     public void showSignUpStep2Fragment() {
@@ -235,10 +221,6 @@ public class XabberLoginActivity extends BaseLoginActivity implements XAccountSi
 
     @Override
     public void onForgotPassClick() {
-        String url = HttpApiManager.XABBER_FORGOT_PASS_URL;
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(url));
-        startActivity(intent);
     }
 
     public void hideKeyboard() {
@@ -282,21 +264,6 @@ public class XabberLoginActivity extends BaseLoginActivity implements XAccountSi
     }
 
     @Override
-    public void onGetHosts() {
-        getHosts();
-    }
-
-    @Override
-    public void onStep1Completed(String username, String host) {
-        SignUpRepo signUpRepo = SignUpRepo.getInstance();
-        signUpRepo.setUsername(username);
-        signUpRepo.setHost(host);
-
-        if (signUpRepo.isCompleted()) onStep3Completed();
-        else showSignUpStep2Fragment();
-    }
-
-    @Override
     public void on2StepCompleted(String pass) {
         SignUpRepo.getInstance().setPass(pass);
         showSignUpStep3Fragment();
@@ -332,194 +299,33 @@ public class XabberLoginActivity extends BaseLoginActivity implements XAccountSi
     /** EMAIL LOGIN */
 
     private void emailLogin(String email, String pass) {
-        showProgress(getString(R.string.progress_title_login));
-        Subscription emailLoginSubscription = AuthManager.login(email, pass)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<XAccountTokenDTO>() {
-                    @Override
-                    public void call(XAccountTokenDTO xAccountTokenDTO) {
-                        handleSuccessSocialLogin(xAccountTokenDTO);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorGetAccount(throwable);
-                    }
-                });
-        compositeSubscription.add(emailLoginSubscription);
+
     }
 
     /** GET HOSTS */
 
     private void getHosts() {
-        if (hosts != null && !hosts.isEmpty()) {
-            if (fragmentSignUpStep1 != null) ((XAccountSignUpFragment1)fragmentSignUpStep1).setupHosts(hosts);
-        } else {
-            if (fragmentSignUpStep1 != null) ((XAccountSignUpFragment1) fragmentSignUpStep1).showHostsProgress(true);
-            Subscription requestHosts = AuthManager.getHosts()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<AuthManager.HostResponse>() {
-                        @Override
-                        public void call(AuthManager.HostResponse response) {
-                            handleSuccessGetHosts(response);
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            handleErrorGetHosts(throwable);
-                        }
-                    });
-            compositeSubscription.add(requestHosts);
-        }
+
     }
 
-    private void handleSuccessGetHosts(AuthManager.HostResponse response) {
-        List<AuthManager.Host> hosts = response.getHosts();
-        if (hosts == null) return;
-
-        this.hosts.clear();
-        this.hosts.addAll(hosts);
-
-        if (fragmentSignUpStep1 != null) {
-            ((XAccountSignUpFragment1) fragmentSignUpStep1).showHostsProgress(false);
-            ((XAccountSignUpFragment1) fragmentSignUpStep1).setupHosts(this.hosts);
-        }
-    }
-
-    private void handleErrorGetHosts(Throwable throwable) {
-        if (fragmentSignUpStep1 != null) ((XAccountSignUpFragment1) fragmentSignUpStep1).showHostsProgress(false);
-        handleError(throwable, "Error while request hosts: ", LOG_TAG);
-    }
 
     /** SIGN UP */
 
     private void signUp(SignUpRepo signUpRepo) {
-        String username = signUpRepo.getUsername();
-        String host = signUpRepo.getHost();
-        String pass = signUpRepo.getPass();
-        String captchaToken = signUpRepo.getCaptchaToken();
-        String credentials = signUpRepo.getSocialCredentials();
-        String socialProvider = signUpRepo.getSocialProvider();
 
-        showProgress(getResources().getString(R.string.progress_title_signup));
-
-        Single<XabberAccount> signUpSingle;
-        if (credentials != null && socialProvider != null)
-            signUpSingle = AuthManager.signupv2(username, host, pass, socialProvider, credentials);
-        else signUpSingle = AuthManager.signupv2(username, host, pass, captchaToken);
-
-        Subscription signUpSubscription = signUpSingle
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<XabberAccount>() {
-                    @Override
-                    public void call(XabberAccount account) {
-                        handleSuccessSignUp();
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorSignUp(throwable);
-                    }
-                });
-        compositeSubscription.add(signUpSubscription);
     }
 
-    private void handleSuccessSignUp() {
-        SignUpRepo.getInstance().clearRepo();
-        hideProgress();
-        XabberAccountManager.getInstance().registerEndpoint();
-        synchronize(false);
-        showSignUpStep4Fragment();
-    }
 
-    private void handleErrorSignUp(Throwable throwable) {
-        SignUpRepo.getInstance().setCaptchaToken(null);
-        hideProgress();
-        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-        if (ERROR_NAME_NOT_AVAILABLE.equals(message)) {
-            SignUpRepo.getInstance().setLastErrorMessage(message);
-            showSignUpStep1Fragment();
-        }
-    }
 
     /** SOCIAL LOGIN */
 
     private void socialLogin(final String provider, final String credentials) {
-        showProgress(getString(R.string.progress_title_login));
-        Subscription loginSocialSubscription = AuthManager.loginSocial(provider, credentials)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<XAccountTokenDTO>() {
-                    @Override
-                    public void call(XAccountTokenDTO s) {
-                        handleSuccessSocialLogin(s);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorSocialLogin(throwable, credentials, provider);
-                    }
-                });
-        compositeSubscription.add(loginSocialSubscription);
+
     }
 
-    private void handleSuccessSocialLogin(@NonNull XAccountTokenDTO response) {
-        getAccount(response.getToken());
-    }
-
-    private void handleErrorSocialLogin(Throwable throwable, String credentials, String provider) {
-        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-        if (message != null) {
-            if (message.contains("is not attached to any Xabber account")) {
-                // go to sign up
-                SignUpRepo.getInstance().setSocialCredentials(credentials);
-                SignUpRepo.getInstance().setSocialProvider(provider);
-                hideProgress();
-                showSignUpStep1Fragment();
-
-            } else {
-                Log.d(LOG_TAG, "Error while social login request: " + message);
-                Toast.makeText(this, R.string.social_auth_fail, Toast.LENGTH_LONG).show();
-            }
-        } else {
-            Log.d(LOG_TAG, "Error while social login request: " + throwable.toString());
-            Toast.makeText(this, R.string.social_auth_fail, Toast.LENGTH_LONG).show();
-        }
-        hideProgress();
-    }
 
     /** GET ACCOUNT */
 
-    private void getAccount(String token) {
-        Subscription getAccountSubscription = AuthManager.getAccount(token)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<XabberAccount>() {
-                    @Override
-                    public void call(XabberAccount xabberAccount) {
-                        handleSuccessGetAccount(xabberAccount);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorGetAccount(throwable);
-                    }
-                });
-        compositeSubscription.add(getAccountSubscription);
-    }
-
-    private void handleSuccessGetAccount(@NonNull XabberAccount xabberAccount) {
-        XabberAccountManager.getInstance().registerEndpoint();
-        synchronize(true);
-    }
-
-    private void handleErrorGetAccount(Throwable throwable) {
-        hideProgress();
-        handleError(throwable, "Error while login: ", LOG_TAG);
-    }
 
     /** CAPTCHA */
 

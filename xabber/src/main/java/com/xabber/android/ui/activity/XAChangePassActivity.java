@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import com.xabber.android.R;
 import com.xabber.android.data.connection.NetworkManager;
-import com.xabber.android.data.xaccount.AuthManager;
 import com.xabber.android.ui.color.BarPainter;
 
 import okhttp3.ResponseBody;
@@ -134,21 +133,7 @@ public class XAChangePassActivity extends ManagedActivity {
     }
 
     private void changePass(String oldPass, String pass, String confirmPass) {
-        showProgress(true);
-        compositeSubscription.add(AuthManager.changePassword(oldPass, pass, confirmPass)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ResponseBody>() {
-                    @Override
-                    public void call(ResponseBody s) {
-                        handleSuccessChangePass();
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorChangePass();
-                    }
-                }));
+
     }
 
     private void handleSuccessChangePass() {

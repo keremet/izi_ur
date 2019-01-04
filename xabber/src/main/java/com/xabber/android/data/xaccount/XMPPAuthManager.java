@@ -114,61 +114,15 @@ public class XMPPAuthManager implements OnPacketListener, OnConnectedListener {
     }
 
     private void requestXMPPAuthCode(final AccountJid accountJid) {
-        Log.d(LOG_TAG, "request XMPP code for account: "
-                + accountJid.getFullJid().toString());
-        AuthManager.requestXMPPCode(accountJid.getFullJid().toString())
-            .subscribe(new Action1<AuthManager.XMPPCode>() {
-                @Override
-                public void call(AuthManager.XMPPCode code) {
-                    Log.d(XMPPAuthManager.class.toString(), "xmpp auth code requested successfully");
-                    addRequest(code.getRequestId(), code.getApiJid(), accountJid.getFullJid().toString());
-                }
-            }, new Action1<Throwable>() {
-                @Override
-                public void call(Throwable throwable) {
-                    Log.d(XMPPAuthManager.class.toString(), "request XMPP code failed: " + throwable.toString());
-                }
-            });
+
     }
 
     private void confirmXMPP(Request request) {
-        Log.d(LOG_TAG, "confirm account: " + request.clientJid);
-        AuthManager.confirmXMPP(request.clientJid, request.code)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Action1<XabberAccount>() {
-                @Override
-                public void call(XabberAccount account) {
-                    Log.d(XMPPAuthManager.class.toString(), "xabber account authorized successfully");
-                    updateSettings();
-                    AccountManager.getInstance().setAllAccountAutoLoginToXabber(true);
-                }
-            }, new Action1<Throwable>() {
-                @Override
-                public void call(Throwable throwable) {
-                    Log.d(XMPPAuthManager.class.toString(), "XMPP authorization failed: " + throwable.toString());
-                }
-            });
+
     }
 
     protected void updateSettings() {
-        AuthManager.patchClientSettings(XabberAccountManager.getInstance().createSettingsList())
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Action1<List<XMPPAccountSettings>>() {
-                @Override
-                public void call(List<XMPPAccountSettings> s) {
-                    Log.d(XMPPAuthManager.class.toString(),
-                            "xabber account settings updated successfully");
-                    XabberAccountManager.getInstance().registerEndpoint();
-                }
-            }, new Action1<Throwable>() {
-                @Override
-                public void call(Throwable throwable) {
-                    Log.d(XMPPAuthManager.class.toString(),
-                            "xabber account settings update failed: " + throwable.toString());
-                }
-            });
+
     }
 
     private void onRequestReceived(Request request) {

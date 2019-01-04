@@ -533,17 +533,6 @@
 
         <activity android:name=".ui.activity.XAChangePassActivity" />
 
-        <activity android:name=".ui.activity.DeepLinkActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" />
-                <data android:host="www.xabber.com" />
-                <data android:pathPrefix="/account/emails/confirmation" />
-            </intent-filter>
-        </activity>
-
         <meta-data android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/SOCIAL_AUTH_FACEBOOK_KEY"/>
         <activity android:name="com.facebook.FacebookActivity"

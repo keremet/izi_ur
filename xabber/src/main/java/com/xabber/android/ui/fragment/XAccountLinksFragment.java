@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.xabber.android.R;
-import com.xabber.android.data.xaccount.AuthManager;
 import com.xabber.android.data.xaccount.EmailDTO;
 import com.xabber.android.data.xaccount.SocialBindingDTO;
 import com.xabber.android.data.xaccount.XabberAccount;
@@ -85,42 +84,18 @@ public class XAccountLinksFragment  extends Fragment implements EmailAdapter.Lis
         tvNameGoogle = view.findViewById(R.id.tvNameGoogle);
         tvActionGoogle = view.findViewById(R.id.tvActionGoogle);
         itemGoogle = view.findViewById(R.id.itemGoogle);
-        itemGoogle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (tvActionGoogle.getText().equals(getString(R.string.action_connect)))
-                    bindListener.onBindClick(AuthManager.PROVIDER_GOOGLE);
-                else onSocialUnlinkClick(AuthManager.PROVIDER_GOOGLE);
-            }
-        });
 
         tvStatusFacebook = view.findViewById(R.id.tvStatusFacebook);
         ivFacebook = view.findViewById(R.id.ivFacebook);
         tvNameFacebook = view.findViewById(R.id.tvNameFacebook);
         tvActionFacebook = view.findViewById(R.id.tvActionFacebook);
         itemFacebook = view.findViewById(R.id.itemFacebook);
-        itemFacebook.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (tvActionFacebook.getText().equals(getString(R.string.action_connect)))
-                    bindListener.onBindClick(AuthManager.PROVIDER_FACEBOOK);
-                else onSocialUnlinkClick(AuthManager.PROVIDER_FACEBOOK);
-            }
-        });
 
         tvStatusTwitter = view.findViewById(R.id.tvStatusTwitter);
         ivTwitter = view.findViewById(R.id.ivTwitter);
         tvNameTwitter = view.findViewById(R.id.tvNameTwitter);
         tvActionTwitter = view.findViewById(R.id.tvActionTwitter);
         itemTwitter = view.findViewById(R.id.itemTwitter);
-        itemTwitter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (tvActionTwitter.getText().equals(getString(R.string.action_connect)))
-                    bindListener.onBindClick(AuthManager.PROVIDER_TWITTER);
-                else onSocialUnlinkClick(AuthManager.PROVIDER_TWITTER);
-            }
-        });
 
         rvEmails = view.findViewById(R.id.rvEmails);
         rvEmails.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -173,23 +148,6 @@ public class XAccountLinksFragment  extends Fragment implements EmailAdapter.Lis
                 .show(getFragmentManager(), ConfirmEmailDialogFragment.class.getSimpleName());
     }
 
-    private void onSocialUnlinkClick(final String provider) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(getString(R.string.title_delete_social, AuthManager.getProviderName(provider)))
-                .setPositiveButton(R.string.action_disconnect, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        listener.onSocialUnbindClick(provider);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        builder.create().show();
-    }
 
     @Override
     public void onEmailDeleteClick(final int id) {
@@ -212,36 +170,6 @@ public class XAccountLinksFragment  extends Fragment implements EmailAdapter.Lis
 
     private void setupSocial(List<SocialBindingDTO> socialBindings) {
         clearSocial();
-        for (SocialBindingDTO socialBinding : socialBindings) {
-            if ("google".equals(socialBinding.getProvider())) {
-                ivGoogle.setImageResource(R.drawable.ic_google_plus);
-                tvNameGoogle.setText(socialBinding.getFirstName() + " " + socialBinding.getLastName());
-                tvNameGoogle.setVisibility(View.VISIBLE);
-                tvStatusGoogle.setText(getResources().getString(R.string.title_linked_account,
-                        AuthManager.getProviderName(socialBinding.getProvider())));
-                tvActionGoogle.setText(R.string.action_disconnect);
-                tvActionGoogle.setVisibility(View.GONE);
-                tvActionGoogle.setTextColor(getActivity().getResources().getColor(R.color.account_register_blue));
-            } else if ("facebook".equals(socialBinding.getProvider())) {
-                ivFacebook.setImageResource(R.drawable.ic_facebook);
-                tvNameFacebook.setText(socialBinding.getFirstName() + " " + socialBinding.getLastName());
-                tvNameFacebook.setVisibility(View.VISIBLE);
-                tvStatusFacebook.setText(getResources().getString(R.string.title_linked_account,
-                        AuthManager.getProviderName(socialBinding.getProvider())));
-                tvActionFacebook.setText(R.string.action_disconnect);
-                tvActionFacebook.setVisibility(View.GONE);
-                tvActionFacebook.setTextColor(getActivity().getResources().getColor(R.color.account_register_blue));
-            } else if ("twitter".equals(socialBinding.getProvider())) {
-                ivTwitter.setImageResource(R.drawable.ic_twitter);
-                tvNameTwitter.setText(socialBinding.getFirstName() + " " + socialBinding.getLastName());
-                tvNameTwitter.setVisibility(View.VISIBLE);
-                tvStatusTwitter.setText(getResources().getString(R.string.title_linked_account,
-                        AuthManager.getProviderName(socialBinding.getProvider())));
-                tvActionTwitter.setText(R.string.action_disconnect);
-                tvActionTwitter.setVisibility(View.GONE);
-                tvActionTwitter.setTextColor(getActivity().getResources().getColor(R.color.account_register_blue));
-            }
-        }
     }
 
     private void clearSocial() {

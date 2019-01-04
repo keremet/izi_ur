@@ -20,7 +20,6 @@ import com.xabber.android.data.Application;
 import com.xabber.android.data.NetworkException;
 import com.xabber.android.data.account.AccountManager;
 import com.xabber.android.data.entity.AccountJid;
-import com.xabber.android.data.xaccount.AuthManager;
 import com.xabber.android.data.xaccount.XabberAccountManager;
 import com.xabber.android.ui.activity.ContactListActivity;
 import com.xabber.android.ui.dialog.OrbotInstallerDialog;
@@ -128,15 +127,6 @@ public class XAccountLoginFragment extends Fragment implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btnLogin:
                 addAccount();
-                break;
-            case R.id.ivFacebook:
-                listener.onBindClick(AuthManager.PROVIDER_FACEBOOK);
-                break;
-            case R.id.ivGoogle:
-                listener.onBindClick(AuthManager.PROVIDER_GOOGLE);
-                break;
-            case R.id.ivTwitter:
-                listener.onBindClick(AuthManager.PROVIDER_TWITTER);
                 break;
             case R.id.ivEmail:
                 emailListener.onEmailClick();

@@ -20,7 +20,6 @@ import com.xabber.android.data.database.realm.XabberAccountRealm;
 import com.xabber.android.data.entity.AccountJid;
 import com.xabber.android.data.log.LogManager;
 import com.xabber.android.ui.color.ColorManager;
-import com.xabber.android.utils.RetrofitErrorConverter;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -176,30 +175,7 @@ public class XabberAccountManager implements OnLoadListener {
      * Calls only in Add Account function
      */
     public void updateSettingsWithSaveLastAccount(final AccountJid jid) {
-        Subscription updateSettingsSubscription = AuthManager.patchClientSettings(createSettingsList())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<XMPPAccountSettings>>() {
-                    @Override
-                    public void call(List<XMPPAccountSettings> s) {
-                        Log.d(LOG_TAG, "XMPP accounts loading from net: successfully");
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.d(LOG_TAG, "XMPP accounts loading from net: error: " + throwable.toString());
 
-                        // invalid token
-                        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-                        if (message != null && message.equals("Invalid token")) {
-                            // save last account
-                            setAccountSyncState(jid.getFullJid().asBareJid().toString(), false);
-                            // logout from deleted account
-                            onInvalidToken();
-                        }
-                    }
-                });
-        compositeSubscription.add(updateSettingsSubscription);
     }
 
     @Override
@@ -218,19 +194,7 @@ public class XabberAccountManager implements OnLoadListener {
     }
 
     private void getAccountFromNet(String token, final boolean needUpdateSettings) {
-        Subscription getAccountSubscription = AuthManager.getAccount(token)
-                .subscribe(new Action1<XabberAccount>() {
-                    @Override
-                    public void call(XabberAccount xabberAccount) {
-                        handleSuccessGetAccount(xabberAccount, needUpdateSettings);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorGetAccount(throwable);
-                    }
-                });
-        compositeSubscription.add(getAccountSubscription);
+
     }
 
     public void updateAccountInfo() {
@@ -238,81 +202,11 @@ public class XabberAccountManager implements OnLoadListener {
     }
 
     public void updateAccountSettings() {
-        List<XMPPAccountSettings> list = createSettingsList();
-        if (list != null && list.size() > 0) {
-            Subscription updateSettingsSubscription = AuthManager.patchClientSettings(list)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<List<XMPPAccountSettings>>() {
-                        @Override
-                        public void call(List<XMPPAccountSettings> s) {
-                            Log.d(LOG_TAG, "XMPP accounts loading from net: successfully");
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            Log.d(LOG_TAG, "XMPP accounts loading from net: error: " + throwable.toString());
 
-                            // invalid token
-                            String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-                            if (message != null && message.equals("Invalid token")) {
-                                // logout from deleted account
-                                onInvalidToken();
-                            }
-                        }
-                    });
-            compositeSubscription.add(updateSettingsSubscription);
-        }
     }
 
-    private void handleSuccessGetAccount(@NonNull XabberAccount xabberAccount, boolean needUpdateSettings) {
-        Log.d(LOG_TAG, "Xabber account loading from net: successfully");
-        setAccount(xabberAccount);
-        if (needUpdateSettings) updateAccountSettings();
-    }
-
-    private void handleErrorGetAccount(Throwable throwable) {
-        Log.d(LOG_TAG, "Xabber account loading from net: error: " + throwable.toString());
-
-        // invalid token
-        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-        if (message != null && message.equals("Invalid token")) {
-            onInvalidToken();
-        }
-    }
 
     public void deleteAccountSettings(String jid) {
-        if (XabberAccountManager.getInstance().getAccountSyncState(jid) != null) {
-
-            Subscription deleteSubscription = AuthManager.deleteClientSettings(jid)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<List<XMPPAccountSettings>>() {
-                        @Override
-                        public void call(List<XMPPAccountSettings> settings) {
-                            handleSuccessDelete(settings);
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            handleErrorDelete(throwable);
-                        }
-                    });
-            compositeSubscription.add(deleteSubscription);
-        }
-    }
-
-    private void handleSuccessDelete(List<XMPPAccountSettings> settings) {
-        Log.d(LOG_TAG, "Settings deleted successfuly");
-    }
-
-    private void handleErrorDelete(Throwable throwable) {
-        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-        if (message != null) {
-            if (message.equals("Invalid token"))
-                XabberAccountManager.getInstance().onInvalidToken();
-            else Log.d(LOG_TAG, "Error while deleting settings: " + message);
-        } else Log.d(LOG_TAG, "Error while deleting settings: " + throwable.toString());
     }
 
     @Nullable
@@ -595,48 +489,6 @@ public class XabberAccountManager implements OnLoadListener {
 
     public static class XabberAccountDeletedEvent {}
 
-    public Single<List<XMPPAccountSettings>> clientSettingsDTOListToPOJO(AuthManager.ListClientSettingsDTO list) {
-        List<XMPPAccountSettings> result = new ArrayList<>();
-
-        for (AuthManager.ClientSettingsDTO dtoItem : list.getSettings()) {
-
-            // create item
-            XMPPAccountSettings accountSettings = clientSettingsDTOToPOJO(dtoItem);
-
-            // set order
-            for (AuthManager.OrderDTO orderDTO : list.getOrderData().getSettings()) {
-                if (orderDTO.getJid().equals(accountSettings.getJid())) {
-                    accountSettings.setOrder(orderDTO.getOrder());
-                }
-            }
-
-            // add to list
-            result.add(accountSettings);
-        }
-
-        // add deleted items to list
-        for (AuthManager.DeletedDTO deletedDTO : list.getDeleted()) {
-            XMPPAccountSettings accountSettings = new XMPPAccountSettings(deletedDTO.getJid(), true, deletedDTO.getTimestamp());
-            accountSettings.setDeleted(true);
-            accountSettings.setOrder(result.size() + 1);
-            result.add(accountSettings);
-        }
-
-        return Single.just(result);
-    }
-
-    public XMPPAccountSettings clientSettingsDTOToPOJO(AuthManager.ClientSettingsDTO dto) {
-        XMPPAccountSettings accountSettings = new XMPPAccountSettings(
-                dto.getJid(),
-                false,
-                dto.getTimestamp()
-        );
-        accountSettings.setColor(dto.getSettings().getColor());
-        accountSettings.setToken(dto.getSettings().getToken());
-        accountSettings.setUsername(dto.getSettings().getUsername());
-
-        return accountSettings;
-    }
 
     public Map<String, Boolean> loadSyncStatesFromRealm() {
         Map<String, Boolean> resultMap = new HashMap<>();
@@ -783,39 +635,11 @@ public class XabberAccountManager implements OnLoadListener {
     }
 
     public void registerEndpoint() {
-        compositeSubscription.add(
-            AuthManager.registerFCMEndpoint(FirebaseInstanceId.getInstance().getToken())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ResponseBody>() {
-                    @Override
-                    public void call(ResponseBody responseBody) {
-                        Log.d(LOG_TAG, "Endpoint successfully registered");
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.d(LOG_TAG, "Endpoint register failed: " + throwable.toString());
-                    }
-                }));
+
     }
 
     public void unregisterEndpoint() {
-        compositeSubscription.add(
-            AuthManager.unregisterFCMEndpoint(FirebaseInstanceId.getInstance().getToken())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ResponseBody>() {
-                    @Override
-                    public void call(ResponseBody responseBody) {
-                        Log.d(LOG_TAG, "Endpoint successfully unregistered");
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.d(LOG_TAG, "Endpoint unregister failed: " + throwable.toString());
-                    }
-                }));
+
     }
 }
 

@@ -15,11 +15,9 @@ import android.widget.Toast;
 
 import com.xabber.android.BuildConfig;
 import com.xabber.android.R;
-import com.xabber.android.data.xaccount.AuthManager;
 import com.xabber.android.data.xaccount.XMPPAccountSettings;
 import com.xabber.android.data.xaccount.XabberAccount;
 import com.xabber.android.data.xaccount.XabberAccountManager;
-import com.xabber.android.utils.RetrofitErrorConverter;
 
 import java.util.List;
 
@@ -157,59 +155,8 @@ public class XabberAccountInfoFragment extends Fragment {
     /** GET SETTINGS */
 
     public void getSettings() {
-        showProgressView(true);
-        Subscription getSettingsSubscription = AuthManager.getClientSettings()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<XMPPAccountSettings>>() {
-                    @Override
-                    public void call(List<XMPPAccountSettings> list) {
-                        showProgressView(false);
-                        List<XMPPAccountSettings> items = XabberAccountManager.getInstance().createSyncList(list);
 
-                        if (items != null && items.size() > 0) {
-                            // save full list to list for sync
-                            XabberAccountManager.getInstance().setXmppAccountsForSync(items);
-                            // show fragment
-                            showSyncFragment();
-                        } else Toast.makeText(getActivity(), R.string.sync_fail, Toast.LENGTH_SHORT).show();
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorGetSettings(throwable);
-                    }
-                });
-        compositeSubscription.add(getSettingsSubscription);
     }
 
-    private void showSyncFragment() {
-        fragmentSync = AccountSyncFragment.newInstance();
-        fTrans = getFragmentManager().beginTransaction();
-        fTrans.replace(R.id.childContainer, fragmentSync);
-        fTrans.commit();
-    }
 
-    private void showProgressView(boolean show) {
-        if (fragmentSync != null && fragmentSync.isVisible() && show) return;
-        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-    }
-
-    private void handleErrorGetSettings(Throwable throwable) {
-        showProgressView(false);
-        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-        if (message != null) {
-            if (message.equals("Invalid token")) {
-                XabberAccountManager.getInstance().onInvalidToken();
-                Toast.makeText(getActivity(), R.string.account_deleted, Toast.LENGTH_LONG).show();
-                getActivity().finish();
-            } else {
-                Log.d(LOG_TAG, "Error while synchronization: " + message);
-                Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Log.d(LOG_TAG, "Error while synchronization: " + throwable.toString());
-            Toast.makeText(getActivity(), R.string.sync_fail, Toast.LENGTH_LONG).show();
-        }
-    }
 }

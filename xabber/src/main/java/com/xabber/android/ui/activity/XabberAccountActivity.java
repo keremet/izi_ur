@@ -21,7 +21,6 @@ import android.widget.Toast;
 import com.xabber.android.R;
 import com.xabber.android.data.account.AccountManager;
 import com.xabber.android.data.connection.NetworkManager;
-import com.xabber.android.data.xaccount.AuthManager;
 import com.xabber.android.data.xaccount.EmailDTO;
 import com.xabber.android.data.xaccount.XMPPAuthManager;
 import com.xabber.android.data.xaccount.XabberAccount;
@@ -29,7 +28,6 @@ import com.xabber.android.data.xaccount.XabberAccountManager;
 import com.xabber.android.ui.color.BarPainter;
 import com.xabber.android.ui.fragment.XAccountXMPPLoginFragment;
 import com.xabber.android.ui.fragment.XabberAccountInfoFragment;
-import com.xabber.android.utils.RetrofitErrorConverter;
 
 import okhttp3.ResponseBody;
 import rx.Subscription;
@@ -186,31 +184,8 @@ public class XabberAccountActivity extends BaseLoginActivity
 
     private void requestXMPPCode(final String jid) {
 
-        // ! show progress !
-
-        Subscription requestXMPPCodeSubscription = AuthManager.requestXMPPCode(jid)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<AuthManager.XMPPCode>() {
-                    @Override
-                    public void call(AuthManager.XMPPCode code) {
-                        handleSuccessRequestXMPPCode(code, jid);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorRequestXMPPCode(throwable);
-                    }
-                });
-        compositeSubscription.add(requestXMPPCodeSubscription);
     }
 
-    private void handleSuccessRequestXMPPCode(AuthManager.XMPPCode code, String jid) {
-
-        // ! hide progress !
-
-        XMPPAuthManager.getInstance().addRequest(code.getRequestId(), code.getApiJid(), jid);
-    }
 
     private void handleErrorRequestXMPPCode(Throwable throwable) {
         // ! hide progress !
@@ -270,22 +245,6 @@ public class XabberAccountActivity extends BaseLoginActivity
         }
     }
 
-    @Override
-    protected void updateAccountInfo(XabberAccount account) {
-        if (account != null) {
-            XabberAccountInfoFragment fragment = (XabberAccountInfoFragment) getFragmentManager().findFragmentByTag(FRAGMENT_INFO);
-            if (fragment != null && fragment.isVisible())
-                ((XabberAccountInfoFragment) fragmentInfo).updateData(account);
-        }
-    }
-
-    @Override
-    protected void updateLastSyncTime() {
-        XabberAccountInfoFragment fragment = (XabberAccountInfoFragment) getFragmentManager().findFragmentByTag(FRAGMENT_INFO);
-        if (fragment != null && fragment.isVisible())
-            ((XabberAccountInfoFragment) fragmentInfo).updateLastSyncTime();
-    }
-
     /** LOGOUT */
 
     private void showLogoutDialog() {
@@ -310,22 +269,7 @@ public class XabberAccountActivity extends BaseLoginActivity
     }
 
     private void logout(final boolean deleteAccounts) {
-        showProgress(getResources().getString(R.string.progress_title_quit));
-        Subscription logoutSubscription = AuthManager.logout()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ResponseBody>() {
-                    @Override
-                    public void call(ResponseBody s) {
-                        handleSuccessLogout(s, deleteAccounts);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        handleErrorLogout(throwable);
-                    }
-                });
-        compositeSubscription.add(logoutSubscription);
+
     }
 
     private void handleSuccessLogout(ResponseBody s, boolean deleteAccounts) {
@@ -340,22 +284,6 @@ public class XabberAccountActivity extends BaseLoginActivity
         startActivity(intent);
     }
 
-    private void handleErrorLogout(Throwable throwable) {
-        String message = RetrofitErrorConverter.throwableToHttpError(throwable);
-        if (message != null) {
-            if (message.equals("Invalid token")) {
-                XabberAccountManager.getInstance().onInvalidToken();
-                //showLoginFragment();
-            } else {
-                Log.d(LOG_TAG, "Error while logout: " + message);
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Log.d(LOG_TAG, "Error while logout: " + throwable.toString());
-            Toast.makeText(this, R.string.logout_error, Toast.LENGTH_LONG).show();
-        }
-        hideProgress();
-    }
 
     /** RESET PASS */
 
@@ -377,30 +305,7 @@ public class XabberAccountActivity extends BaseLoginActivity
     }
 
     private void requestResetPass(final String email) {
-        showProgress("");
-        compositeSubscription.add(AuthManager.requestResetPassword(email)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Action1<ResponseBody>() {
-                @Override
-                public void call(ResponseBody s) {
-                    handleSuccessResetPass(email);
-                }
-            }, new Action1<Throwable>() {
-                @Override
-                public void call(Throwable throwable) {
-                    handleErrorResetPass();
-                }
-            }));
+
     }
 
-    private void handleSuccessResetPass(String email) {
-        Toast.makeText(this, getString(R.string.password_reset_success, email), Toast.LENGTH_LONG).show();
-        hideProgress();
-    }
-
-    private void handleErrorResetPass() {
-        Toast.makeText(this, R.string.password_reset_fail, Toast.LENGTH_SHORT).show();
-        hideProgress();
-    }
 }
