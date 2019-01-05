@@ -136,9 +136,9 @@ public class AccountItem extends ConnectionItem implements Comparable<AccountIte
         this.keyPair = keyPair;
         this.lastSync = lastSync;
         this.archiveMode = archiveMode;
-        this.clearHistoryOnExit = false;
-        this.mamDefaultBehaviour = MamPrefsIQ.DefaultBehavior.always;
-        this.loadHistorySettings = LoadHistorySettings.all;
+        this.clearHistoryOnExit = true;
+        this.mamDefaultBehaviour = MamPrefsIQ.DefaultBehavior.never;
+        this.loadHistorySettings = LoadHistorySettings.none;
         this.successfulConnectionHappened = false;
     }
 

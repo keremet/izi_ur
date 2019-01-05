@@ -228,7 +228,7 @@
     <string name="chats_hide_keyboard_default">@string/chats_hide_keyboard_landscape_value</string>
 
     <string name="chats_show_background_key">chats_show_background</string>
-    <bool name="chats_show_background_default">true</bool>
+    <bool name="chats_show_background_default">false</bool>
 
     <string name="chats_font_size_key">chats_font_size</string>
     <string name="chats_font_size_small_value">small</string>
@@ -259,7 +259,7 @@
     <string name="chats_attention_sound_default">@string/default_sound</string>
 
     <string name="connection_start_at_boot_key">connection_start_at_boot</string>
-    <bool name="connection_start_at_boot_default">false</bool>
+    <bool name="connection_start_at_boot_default">true</bool>
 
     <string name="battery_optimization_disable_key">battery_optimization_disable</string>
 
@@ -479,7 +479,7 @@
         <item>@string/security_otr_mode_auto_value</item>
         <item>@string/security_otr_mode_required_value</item>
     </string-array>
-    <string name="security_otr_mode_default">@string/security_otr_mode_manual_value</string>
+    <string name="security_otr_mode_default">@string/security_otr_mode_auto_value</string>
 
     <string name="security_otr_history_key">security_otr_history</string>
     <bool name="security_otr_history_default">true</bool>
