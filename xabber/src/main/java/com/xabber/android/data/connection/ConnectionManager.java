@@ -39,7 +39,7 @@ public class ConnectionManager implements OnInitializedListener, OnCloseListener
      */
     public final static int PACKET_REPLY_TIMEOUT = 30000;
 
-    private final static int PING_INTERVAL_SECONDS = 60;
+    private final static int PING_INTERVAL_SECONDS = 60*30;
 
     private static ConnectionManager instance;
 
