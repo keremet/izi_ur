@@ -21,8 +21,6 @@ import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
 import com.frogermcs.androiddevmetrics.AndroidDevMetrics;
 import com.github.moduth.blockcanary.BlockCanary;
 import com.squareup.leakcanary.LeakCanary;
@@ -76,8 +74,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-
-import io.fabric.sdk.android.Fabric;
 
 /**
  * Base entry point.
@@ -330,17 +326,6 @@ public class Application extends android.app.Application {
                     .detectAll()
                     .penaltyLog()
                     .build());
-        }
-
-        /** Crashlytics */
-        // Set up Crashlytics, disabled for debug builds
-        Crashlytics crashlyticsKit = new Crashlytics.Builder()
-                .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
-                .build();
-
-        // Initialize Fabric with the debug-disabled crashlytics.
-        if (BuildConfig.USE_CRASHLYTICS) {
-            Fabric.with(this, crashlyticsKit, new Crashlytics());
         }
 
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
