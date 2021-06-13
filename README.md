@@ -11,6 +11,8 @@ Being both free (as in freedom!) and ad-free, [Xabber](https://www.xabber.com/) 
 Xabber uses Gradle build system. The only specific thing is git submodule for ge0rg/MemorizingTrustManager library. To make it work use following commands:
 
  ```
+ git clone https://github.com/keremet/izi_ur
+ cd izi_ur
  git submodule init
  git submodule update
  ```
@@ -19,6 +21,18 @@ Xabber uses Gradle build system. The only specific thing is git submodule for ge
 **2. Build**
 
 To build Xabber use **"dev"** productFlavour. Other flavours like "beta", "prod", "ru" and "vip" requare api keys that not represent in this repository.
+
+export ANDROID_HOME=/home/keremet/Android/Sdk
+
+./gradlew assembleDev
+
+keytool -genkey -v -keystore my.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias app
+
+apksigner sign --ks my.keystore ./xabber/build/outputs/apk/dev/release/xabber-dev-universal-release-unsigned.apk
+
+apksigner verify ./xabber/build/outputs/apk/dev/release/xabber-dev-universal-release-unsigned.apk
+
+adb install ./xabber/build/outputs/apk/dev/release/xabber-dev-universal-release-unsigned.apk
 
 ## Translations [![Crowdin](https://d322cqt584bo4o.cloudfront.net/xabber/localized.svg)](https://crowdin.com/project/xabber)
 
